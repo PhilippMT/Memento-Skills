@@ -138,7 +138,7 @@ class CLIAgentBootstrap:
                 shutil.copy2(script, dest_script)
                 # Make executable
                 dest_script.chmod(
-                    dest_script.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH
+                    dest_script.stat().st_mode | stat.S_IXUSR
                 )
                 copied_scripts.append(script.name)
 

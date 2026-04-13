@@ -45,6 +45,6 @@ curl -s --max-time 10 -X POST "${MEMENTO_URL}/sync" \
 SOURCE=$(echo "$INPUT" | jq -r '.source // "unknown"')
 TIMESTAMP=$(echo "$INPUT" | jq -r '.timestamp // 0')
 
-echo "[memento] Session started (source=${SOURCE}) at $(date -d @$((TIMESTAMP/1000)) 2>/dev/null || date)" >&2
+echo "[memento] Session started (source=${SOURCE}) at $(date)" >&2
 
 exit 0

@@ -40,13 +40,13 @@ QUERY="${DESCRIPTION:-${COMMAND:-${TOOL_NAME}}}"
 
 DISCOVER_RESULT=$(curl -s --max-time 5 -X POST "${MEMENTO_URL}/discover" \
     -H "Content-Type: application/json" \
-    -d "{\"query\": $(echo "$QUERY" | jq -Rs .), \"tool_name\": \"${TOOL_NAME}\", \"k\": 3}" \
+    -d "$(jq -n --arg q "$QUERY" --arg t "$TOOL_NAME" '{query: $q, tool_name: $t, k: 3}')" \
     2>/dev/null || echo '{"skills":[]}')
 
 # ---- 3. Check for dangerous patterns (safety policy) ----
 if [ "$TOOL_NAME" = "bash" ]; then
     # Check for dangerous command patterns
-    if echo "$COMMAND" | grep -qE 'rm\s+-rf\s+/[^.]|mkfs|dd\s+if=|:(){ :|format\s+[A-Z]:'; then
+    if echo "$COMMAND" | grep -qE 'rm\s+-rf\s+/[^/]|mkfs|dd\s+if=|:(){ :|format\s+[A-Z]:'; then
         echo '{"permissionDecision":"deny","permissionDecisionReason":"Memento safety policy: Potentially destructive system command detected"}'
         exit 0
     fi

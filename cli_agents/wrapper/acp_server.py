@@ -464,6 +464,15 @@ def _daemonize(
     host: str, port: int, skills_dir: Path | None
 ) -> None:
     """Fork into a background daemon process."""
+    import platform
+
+    if platform.system() == "Windows":
+        logger.error(
+            "Daemon mode is not supported on Windows. "
+            "Run the server in the foreground or use a service manager."
+        )
+        return
+
     pid_file = Path.home() / "memento_s" / "memento-acp.pid"
     pid_file.parent.mkdir(parents=True, exist_ok=True)
 

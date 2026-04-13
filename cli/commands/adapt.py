@@ -222,7 +222,7 @@ def serve_command(
 
     # Find skills directory
     skills_dir = Path.home() / "memento_s" / "workspace" / "skills"
-    builtin_skills = Path(__file__).resolve().parent.parent / "builtin" / "skills"
+    builtin_skills = Path(__file__).resolve().parent.parent.parent / "builtin" / "skills"
     if not skills_dir.exists() and builtin_skills.exists():
         skills_dir = builtin_skills
 
