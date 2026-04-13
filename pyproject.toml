@@ -87,6 +87,7 @@ sources = [
     "utils",
     "builtin",
     "daemon",
+    "cli_agents",
     "bootstrap",   # bootstrap/ package (was bootstrap.py)
 ]
 requires = [
@@ -124,10 +125,12 @@ console_app = false
 
 # ─── Hatch build ───────────────────────────────────────────────────────────────
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core", "middleware", "gui", "utils", "builtin", "daemon"]
+packages = ["cli", "core", "middleware", "gui", "utils", "builtin", "daemon", "cli_agents"]
 include = [
     "bootstrap.py",
     "builtin/skills/**",
+    "cli_agents/hooks/**",
+    "cli_agents/research/**",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -139,6 +142,7 @@ include = [
     "utils/",
     "builtin/",
     "daemon/",
+    "cli_agents/",
     "bootstrap.py",
     "pyproject.toml",
     "README.md",
