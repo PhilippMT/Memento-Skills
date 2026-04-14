@@ -42,7 +42,7 @@ class SkillConverter:
         else:
             raise ValueError(f"Unknown target: {self.target}")
 
-    async def sync_all(self) -> tuple[int, Path]:
+    def sync_all(self) -> tuple[int, Path]:
         """Sync all Memento skills to the target platform.
 
         Returns:
@@ -85,6 +85,8 @@ class SkillConverter:
 
         # Parse frontmatter
         name, description, metadata, body = _parse_skill_md(content)
+        if not name:
+            name = source.name
 
         # Generate platform-specific SKILL.md
         if self.target == "copilot-cli":

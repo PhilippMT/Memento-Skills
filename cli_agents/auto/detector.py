@@ -101,7 +101,7 @@ def _detect_kiro(workspace: Path) -> DetectionResult:
     kiro_dir = workspace / ".kiro"
     if kiro_dir.exists():
         signals["kiro_dir"] = str(kiro_dir)
-        score += 0.3
+        score += 0.4
 
     # Check for .kiro/hooks directory
     hooks_dir = workspace / ".kiro" / "hooks"
@@ -109,18 +109,17 @@ def _detect_kiro(workspace: Path) -> DetectionResult:
         signals["hooks_dir"] = str(hooks_dir)
         score += 0.2
 
+    # Check for .kiro/agents directory
+    agents_dir = workspace / ".kiro" / "agents"
+    if agents_dir.exists():
+        signals["agents_dir"] = str(agents_dir)
+        score += 0.3
+
     # Check for steering files
     steering_dir = workspace / ".kiro" / "steering"
     if steering_dir.exists():
         signals["steering_dir"] = str(steering_dir)
         score += 0.1
-
-    # Check for environment variables
-    kiro_env_vars = ["KIRO_SESSION", "KIRO_WORKSPACE"]
-    for var in kiro_env_vars:
-        if os.environ.get(var):
-            signals[f"env_{var}"] = True
-            score += 0.3
 
     agent = "kiro" if score > 0 else "unknown"
     return DetectionResult(agent=agent, confidence=min(score, 1.0), details=signals)

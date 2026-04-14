@@ -5,7 +5,6 @@
       {
         "type": "command",
         "bash": "./scripts/session_start.sh",
-        "powershell": "./scripts/session_start.ps1",
         "cwd": ".github/hooks",
         "timeoutSec": 15,
         "env": {
@@ -18,7 +17,6 @@
       {
         "type": "command",
         "bash": "./scripts/pre_tool_use.sh",
-        "powershell": "./scripts/pre_tool_use.ps1",
         "cwd": ".github/hooks",
         "timeoutSec": 10,
         "env": {
@@ -31,7 +29,6 @@
       {
         "type": "command",
         "bash": "./scripts/post_tool_use.sh",
-        "powershell": "./scripts/post_tool_use.ps1",
         "cwd": ".github/hooks",
         "timeoutSec": 10,
         "env": {
@@ -44,7 +41,6 @@
       {
         "type": "command",
         "bash": "./scripts/session_end.sh",
-        "powershell": "./scripts/session_end.ps1",
         "cwd": ".github/hooks",
         "timeoutSec": 10,
         "env": {
@@ -57,7 +53,6 @@
       {
         "type": "command",
         "bash": "./scripts/error_occurred.sh",
-        "powershell": "./scripts/error_occurred.ps1",
         "cwd": ".github/hooks",
         "timeoutSec": 5,
         "env": {

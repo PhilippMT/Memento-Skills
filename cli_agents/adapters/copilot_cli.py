@@ -193,8 +193,13 @@ class CopilotCLIAdapter(BaseCLIAgentAdapter):
 class KiroAdapter(BaseCLIAgentAdapter):
     """Adapter for Kiro IDE/CLI integration.
 
+    Kiro hooks are defined inside agent JSON configs at .kiro/agents/*.json.
+    Hook types: agentSpawn, userPromptSubmit, preToolUse, postToolUse, stop.
+    Hooks receive JSON via STDIN; STDOUT is added to agent context (exit 0).
+
     Generates:
-    - .kiro/hooks/*.yaml (hook configurations)
+    - .kiro/agents/memento.json (agent config with hooks)
+    - .kiro/hooks/scripts/*.sh (hook shell scripts)
     - .kiro/skills/*/SKILL.md (converted skills)
     """
 
@@ -202,33 +207,37 @@ class KiroAdapter(BaseCLIAgentAdapter):
         return "kiro"
 
     def hooks_dir(self) -> Path:
-        return self.workspace / ".kiro" / "hooks"
+        return self.workspace / ".kiro" / "hooks" / "scripts"
 
     def skills_dir(self) -> Path:
         return self.workspace / ".kiro" / "skills"
 
     def generate_hooks(self, server_url: str = "http://127.0.0.1:47200") -> dict[str, Any]:
-        """Generate Kiro hooks configuration."""
-        hooks_dir = self.hooks_dir()
-        hooks_dir.mkdir(parents=True, exist_ok=True)
+        """Generate Kiro agent config and hook scripts."""
+        agents_dir = self.workspace / ".kiro" / "agents"
+        agents_dir.mkdir(parents=True, exist_ok=True)
+        scripts_dir = self.hooks_dir()
+        scripts_dir.mkdir(parents=True, exist_ok=True)
 
-        generated_hooks = []
-        # Copy bundled hook YAMLs
-        bundled_hooks = Path(__file__).parent.parent / "hooks" / "kiro"
-        if bundled_hooks.exists():
-            for hook_file in bundled_hooks.glob("*.yaml"):
-                dest = hooks_dir / hook_file.name
-                content = hook_file.read_text()
-                # Replace server URL if different from default
-                content = content.replace(
-                    "http://127.0.0.1:47200", server_url
-                )
-                dest.write_text(content)
-                generated_hooks.append(hook_file.name)
+        # Copy agent config template
+        bundled = Path(__file__).parent.parent / "hooks" / "kiro"
+        agent_config_src = bundled / "memento-agent.json"
+        agent_config_dest = agents_dir / "memento.json"
+        agent_config_dest.write_text(agent_config_src.read_text())
+
+        # Copy hook scripts
+        generated_scripts = []
+        bundled_scripts = bundled / "scripts"
+        if bundled_scripts.exists():
+            for script in bundled_scripts.glob("*.sh"):
+                dest = scripts_dir / script.name
+                dest.write_text(script.read_text())
+                dest.chmod(dest.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
+                generated_scripts.append(script.name)
 
         return {
-            "hooks_dir": str(hooks_dir),
-            "hooks": generated_hooks,
+            "agent_config": str(agent_config_dest),
+            "scripts": generated_scripts,
         }
 
     def convert_skill(
@@ -266,14 +275,20 @@ class KiroAdapter(BaseCLIAgentAdapter):
         """Verify Kiro integration."""
         results: dict[str, Any] = {}
 
-        # Check hooks
-        hooks_dir = self.hooks_dir()
-        if hooks_dir.exists():
-            results["hooks_count"] = len(list(hooks_dir.glob("*.yaml")))
-        else:
-            results["hooks_count"] = 0
+        agent_config = self.workspace / ".kiro" / "agents" / "memento.json"
+        results["hooks_installed"] = agent_config.exists()
 
-        # Check skills
+        scripts_dir = self.hooks_dir()
+        if scripts_dir.exists():
+            scripts = list(scripts_dir.glob("*.sh"))
+            results["scripts_count"] = len(scripts)
+            results["scripts_executable"] = all(
+                os.access(s, os.X_OK) for s in scripts
+            )
+        else:
+            results["scripts_count"] = 0
+            results["scripts_executable"] = False
+
         skills_dir = self.skills_dir()
         if skills_dir.exists():
             results["skills_count"] = len(
@@ -281,8 +296,6 @@ class KiroAdapter(BaseCLIAgentAdapter):
             )
         else:
             results["skills_count"] = 0
-
-        results["hooks_installed"] = results["hooks_count"] > 0
 
         return results
 

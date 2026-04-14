@@ -2,7 +2,7 @@
 name = "memento-s"
 version = "0.2.0"
 description = "Memento-S Agent"
-requires-python = ">=3.12"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "typer",
     "rich",
@@ -18,7 +18,7 @@ dependencies = [
     "httpx",
     "beautifulsoup4",
     "markdownify",
-    "aiohttp",
+    "aiohttp>=3.9.0",
     "requests",
     "aiofiles",
     "anyio",
@@ -106,7 +106,7 @@ requires = [
     "httpx",
     "beautifulsoup4",
     "markdownify",
-    "aiohttp",
+    "aiohttp>=3.9.0",
     "requests",
     "aiofiles",
     "anyio",

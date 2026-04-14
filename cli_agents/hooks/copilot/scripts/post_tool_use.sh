@@ -1,23 +1,6 @@
 #!/bin/bash
 # Memento-Skills: Post-Tool-Use Hook for GitHub Copilot CLI
-#
-# This hook runs AFTER a tool completes execution. It:
-# 1. Records the execution outcome in Memento for reflective learning
-# 2. Updates skill utility scores based on success/failure
-# 3. Logs execution statistics
-#
-# Input (JSON via stdin):
-#   {
-#     "timestamp": ...,
-#     "cwd": "...",
-#     "toolName": "bash"|"edit"|...,
-#     "toolArgs": "{...}",
-#     "toolResult": {
-#       "resultType": "success"|"failure"|"denied",
-#       "textResultForLlm": "..."
-#     }
-#   }
-#
+# Input (JSON via stdin): { "timestamp": ..., "toolName": "...", "toolResult": { "resultType": "...", "textResultForLlm": "..." } }
 # Output: ignored
 set -e
 
@@ -31,11 +14,8 @@ RESULT_TEXT=$(echo "$INPUT" | jq -r '.toolResult.textResultForLlm // ""' | head 
 # ---- 1. Record outcome in Memento for reflective learning ----
 curl -s --max-time 5 -X POST "${MEMENTO_URL}/reflect" \
     -H "Content-Type: application/json" \
-    -d "{
-        \"tool_name\": \"${TOOL_NAME}\",
-        \"result_type\": \"${RESULT_TYPE}\",
-        \"result_text\": $(echo "$RESULT_TEXT" | jq -Rs .)
-    }" >/dev/null 2>&1 || true
+    -d "$(jq -n --arg tool "$TOOL_NAME" --arg type "$RESULT_TYPE" --arg text "$RESULT_TEXT" '{tool_name: $tool, result_type: $type, result_text: $text}')" \
+    >/dev/null 2>&1 || true
 
 # ---- 2. Log execution statistics ----
 echo "[memento] Tool ${TOOL_NAME}: ${RESULT_TYPE}" >&2

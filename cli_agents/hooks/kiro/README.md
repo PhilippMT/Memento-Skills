@@ -1,12 +1,30 @@
 # Memento-Skills Kiro Hooks
 
-This directory contains hook configurations for integrating Memento-Skills
-with the Kiro IDE/CLI.
+Kiro hooks integration for Memento-Skills. Hooks are defined inside agent
+JSON configuration files at `.kiro/agents/*.json`, **not** as standalone
+YAML files.
+
+## How Kiro Hooks Work
+
+- Hook types: `agentSpawn`, `userPromptSubmit`, `preToolUse`, `postToolUse`, `stop`
+- Each hook has a `command` (shell script), optional `matcher` (tool filter for pre/postToolUse), and optional `description`
+- Hooks receive JSON via **STDIN** with fields: `hook_event_name`, `cwd`, `tool_name`, `tool_input`, `tool_response`
+- Exit code `0` = success (STDOUT added to agent context for agentSpawn/userPromptSubmit/preToolUse)
+- Exit code `2` = block (preToolUse only — prevents the tool from executing)
 
 ## Structure
 
-Kiro hooks are event-driven automation rules stored in `.kiro/hooks/`.
-Each hook YAML file defines a trigger event and the action to execute.
+```
+.kiro/
+├── agents/
+│   └── memento.json          # Agent config with hook definitions
+└── hooks/
+    └── scripts/
+        ├── session_start.sh   # agentSpawn — ACP health check + skill sync
+        ├── pre_tool_use.sh    # preToolUse — skill discovery + safety gate
+        ├── post_tool_use.sh   # postToolUse — record outcome for reflection
+        └── session_end.sh     # stop — persist learning data
+```
 
 ## Installation
 
@@ -14,14 +32,20 @@ Each hook YAML file defines a trigger event and the action to execute.
 # Auto-install via memento CLI
 memento adapt --target kiro
 
-# Or manually copy to your project
-cp -r cli_agents/hooks/kiro/hooks/ .kiro/hooks/
+# Or manually copy
+mkdir -p .kiro/agents .kiro/hooks/scripts
+cp cli_agents/hooks/kiro/memento-agent.json .kiro/agents/memento.json
+cp cli_agents/hooks/kiro/scripts/*.sh .kiro/hooks/scripts/
+chmod +x .kiro/hooks/scripts/*.sh
 ```
 
-## Hooks Provided
+## Environment Variables
 
-| Hook | Trigger | Action |
-|------|---------|--------|
-| `memento-sync.yaml` | File save in skills/ | Sync skills to Kiro format |
-| `memento-reflect.yaml` | File save in src/ | Record tool outcomes |
-| `memento-discover.yaml` | Manual trigger | Search Memento skills |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MEMENTO_ACP_HOST` | `127.0.0.1` | ACP server host |
+| `MEMENTO_ACP_PORT` | `47200` | ACP server port |
+
+## Dependencies
+
+Scripts require `jq` for JSON parsing and `curl` for HTTP requests.

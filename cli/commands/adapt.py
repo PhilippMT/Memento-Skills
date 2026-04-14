@@ -67,7 +67,7 @@ def adapt_command(
     console.print(f"  Workspace: {workspace or Path.cwd()}\n")
 
     with console.status("[bold green]Setting up integration..."):
-        results = run_bootstrap(target=target, workspace=workspace, auto=auto)
+        results = run_bootstrap(target=target, workspace=workspace)
 
     # Display results
     table = Table(title="Setup Results", show_header=True)
@@ -118,7 +118,7 @@ def adapt_command(
 
 def _verify_command(target: str | None, workspace: str | None) -> None:
     """Verify the integration is correctly set up."""
-    from cli_agents.adapters.copilot_cli import get_adapter
+    from cli_agents.adapters.copilot_cli import get_adapter  # get_adapter is a factory that returns CopilotCLIAdapter or KiroAdapter
     from cli_agents.wrapper.acp_client import ACPClient
 
     ws = Path(workspace) if workspace else Path.cwd()

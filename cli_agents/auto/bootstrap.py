@@ -12,16 +12,12 @@ Memento-Skills with a CLI coding agent. It:
 
 from __future__ import annotations
 
-import json
 import logging
-import os
-import shutil
-import stat
 from pathlib import Path
 from typing import Any
 
 from cli_agents.auto.detector import detect_cli_agent
-from cli_agents.config import AdapterConfig, ACPServerConfig
+from cli_agents.config import AdapterConfig
 
 logger = logging.getLogger("memento.bootstrap")
 
@@ -106,63 +102,9 @@ class CLIAgentBootstrap:
 
     def _install_hooks(self) -> dict:
         """Install hook configurations for the target platform."""
-        hooks_source = Path(__file__).parent.parent / "hooks"
-
-        if self.config.target == "copilot-cli":
-            return self._install_copilot_hooks(hooks_source / "copilot")
-        elif self.config.target == "kiro":
-            return self._install_kiro_hooks(hooks_source / "kiro")
-        else:
-            raise ValueError(f"Unknown target: {self.config.target}")
-
-    def _install_copilot_hooks(self, source: Path) -> dict:
-        """Install GitHub Copilot CLI hooks."""
-        hooks_dest = self.workspace / ".github" / "hooks"
-        hooks_dest.mkdir(parents=True, exist_ok=True)
-
-        # Copy hooks.json
-        hooks_json = source / "hooks.json"
-        if hooks_json.exists():
-            dest_json = hooks_dest / "memento-hooks.json"
-            shutil.copy2(hooks_json, dest_json)
-
-        # Copy and make scripts executable
-        scripts_src = source / "scripts"
-        scripts_dest = hooks_dest / "scripts"
-        scripts_dest.mkdir(parents=True, exist_ok=True)
-
-        copied_scripts = []
-        if scripts_src.exists():
-            for script in scripts_src.glob("*.sh"):
-                dest_script = scripts_dest / script.name
-                shutil.copy2(script, dest_script)
-                # Make executable
-                dest_script.chmod(
-                    dest_script.stat().st_mode | stat.S_IXUSR
-                )
-                copied_scripts.append(script.name)
-
-        return {
-            "hooks_dir": str(hooks_dest),
-            "hooks_config": str(hooks_dest / "memento-hooks.json"),
-            "scripts": copied_scripts,
-        }
-
-    def _install_kiro_hooks(self, source: Path) -> dict:
-        """Install Kiro hooks."""
-        hooks_dest = self.workspace / ".kiro" / "hooks"
-        hooks_dest.mkdir(parents=True, exist_ok=True)
-
-        copied_hooks = []
-        for hook_file in source.glob("*.yaml"):
-            dest_hook = hooks_dest / hook_file.name
-            shutil.copy2(hook_file, dest_hook)
-            copied_hooks.append(hook_file.name)
-
-        return {
-            "hooks_dir": str(hooks_dest),
-            "hooks": copied_hooks,
-        }
+        from cli_agents.adapters.copilot_cli import get_adapter
+        adapter = get_adapter(self.config.target, self.workspace)
+        return adapter.generate_hooks(self.config.server.base_url)
 
     def _install_skills(self) -> dict:
         """Convert and install Memento skills."""
@@ -181,22 +123,8 @@ class CLIAgentBootstrap:
             workspace=self.workspace,
         )
 
-        # Run synchronously (wrap async)
-        import asyncio
-
-        try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                import concurrent.futures
-
-                with concurrent.futures.ThreadPoolExecutor() as pool:
-                    count, output_dir = pool.submit(
-                        lambda: asyncio.run(converter.sync_all())
-                    ).result()
-            else:
-                count, output_dir = loop.run_until_complete(converter.sync_all())
-        except RuntimeError:
-            count, output_dir = asyncio.run(converter.sync_all())
+        # Run synchronously
+        count, output_dir = converter.sync_all()
 
         return {
             "skills_synced": count,
@@ -223,14 +151,12 @@ class CLIAgentBootstrap:
 def run_bootstrap(
     target: str | None = None,
     workspace: str | None = None,
-    auto: bool = False,
 ) -> dict:
     """Entry point for the bootstrap process.
 
     Args:
         target: Target platform ("copilot-cli" or "kiro"). Auto-detected if None.
         workspace: Workspace directory. Defaults to cwd.
-        auto: If True, auto-detect everything and proceed without prompting.
 
     Returns:
         Setup results dictionary.

@@ -296,7 +296,7 @@ async def handle_sync(request: web.Request) -> web.Response:
     )
 
     try:
-        count, output_dir = await converter.sync_all()
+        count, output_dir = converter.sync_all()
         return web.json_response(
             {"synced": count, "target": target, "output_dir": str(output_dir)}
         )
@@ -421,10 +421,14 @@ def create_app(
     app = web.Application()
 
     # Store references
-    app["skills_dir"] = skills_dir or Path.home() / "memento_s" / "workspace" / "skills"
+    sd = skills_dir or Path.home() / "memento_s" / "workspace" / "skills"
+    app["skills_dir"] = sd
     if skill_gateway:
         app["skill_gateway"] = skill_gateway
-    app["memento_state"] = {"skills_count": 0, "sessions_active": 0}
+    count = 0
+    if sd.exists():
+        count = sum(1 for p in sd.iterdir() if p.is_dir() and (p / "SKILL.md").exists())
+    app["memento_state"] = {"skills_count": count, "sessions_active": 0}
 
     # Register routes
     app.router.add_get("/health", handle_health)
@@ -489,7 +493,6 @@ def _daemonize(
     pid = os.fork()
     if pid > 0:
         # Parent process
-        pid_file.write_text(str(pid))
         logger.info("ACP server started as daemon (PID %d)", pid)
         return
 

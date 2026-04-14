@@ -59,7 +59,7 @@ Memento-Skills Core (SkillGateway, SkillExecutor, Reflection)
 | `skills/converter.py` | Convert Memento skills to platform-native format |
 | `auto/bootstrap.py` | Automated setup and configuration |
 | `auto/detector.py` | Detect which CLI agent environment is active |
-| `config/settings.py` | Configuration management |
+| `config/__init__.py` | Configuration management |
 
 ## How It Works
 
