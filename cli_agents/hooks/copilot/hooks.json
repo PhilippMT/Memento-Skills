@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "type": "command",
+        "bash": "./scripts/session_start.sh",
+        "cwd": ".github/hooks",
+        "timeoutSec": 15,
+        "env": {
+          "MEMENTO_ACP_PORT": "47200",
+          "MEMENTO_ACP_HOST": "127.0.0.1"
+        }
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "./scripts/pre_tool_use.sh",
+        "cwd": ".github/hooks",
+        "timeoutSec": 10,
+        "env": {
+          "MEMENTO_ACP_PORT": "47200",
+          "MEMENTO_ACP_HOST": "127.0.0.1"
+        }
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "./scripts/post_tool_use.sh",
+        "cwd": ".github/hooks",
+        "timeoutSec": 10,
+        "env": {
+          "MEMENTO_ACP_PORT": "47200",
+          "MEMENTO_ACP_HOST": "127.0.0.1"
+        }
+      }
+    ],
+    "sessionEnd": [
+      {
+        "type": "command",
+        "bash": "./scripts/session_end.sh",
+        "cwd": ".github/hooks",
+        "timeoutSec": 10,
+        "env": {
+          "MEMENTO_ACP_PORT": "47200",
+          "MEMENTO_ACP_HOST": "127.0.0.1"
+        }
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "bash": "./scripts/error_occurred.sh",
+        "cwd": ".github/hooks",
+        "timeoutSec": 5,
+        "env": {
+          "MEMENTO_ACP_PORT": "47200",
+          "MEMENTO_ACP_HOST": "127.0.0.1"
+        }
+      }
+    ]
+  }
+}

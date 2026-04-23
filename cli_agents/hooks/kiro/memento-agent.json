@@ -1,0 +1,30 @@
+{
+  "name": "memento",
+  "description": "Memento-Skills integration — self-evolving skill discovery, execution, and reflective learning",
+  "hooks": {
+    "agentSpawn": [
+      {
+        "command": ".kiro/hooks/scripts/session_start.sh",
+        "description": "Start Memento ACP server and sync skills"
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".kiro/hooks/scripts/pre_tool_use.sh",
+        "description": "Discover relevant Memento skills"
+      }
+    ],
+    "postToolUse": [
+      {
+        "command": ".kiro/hooks/scripts/post_tool_use.sh",
+        "description": "Record outcome for reflective learning"
+      }
+    ],
+    "stop": [
+      {
+        "command": ".kiro/hooks/scripts/session_end.sh",
+        "description": "Persist learning data"
+      }
+    ]
+  }
+}

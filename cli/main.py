@@ -30,6 +30,8 @@ from cli.commands import (
     im_status_command,
     gateway_worker_command,
     wechat_app,
+    adapt_command,
+    serve_command,
 )
 
 # 版本号管理：开发模式从 version.py 读取，打包模式从包元数据读取
@@ -140,6 +142,39 @@ def gateway_worker(
 ) -> None:
     """Start Gateway Agent Worker: connect to Gateway and process messages."""
     gateway_worker_command(gateway_url=gateway_url, agent_id=agent_id)
+
+
+@app.command()
+def adapt(
+    target: str = typer.Option(
+        None, "--target", "-t", help="Target platform: copilot-cli or kiro"
+    ),
+    workspace: str = typer.Option(
+        None, "--workspace", "-w", help="Workspace directory (default: cwd)"
+    ),
+    auto: bool = typer.Option(
+        False, "--auto", help="Auto-detect CLI agent and set up"
+    ),
+    verify: bool = typer.Option(
+        False, "--verify", help="Verify existing integration"
+    ),
+) -> None:
+    """Adapt Memento-Skills for CLI coding agents (Copilot CLI, Kiro)."""
+    adapt_command(target=target, workspace=workspace, auto=auto, verify=verify)
+
+
+@app.command()
+def serve(
+    host: str = typer.Option("127.0.0.1", "--host", help="Bind address"),
+    port: int = typer.Option(47200, "--port", "-p", help="Port number"),
+    daemon: bool = typer.Option(
+        False, "--daemon", "-d", help="Run as background daemon"
+    ),
+    stop: bool = typer.Option(False, "--stop", help="Stop the daemon"),
+    status: bool = typer.Option(False, "--status", help="Check daemon status"),
+) -> None:
+    """Manage the Memento ACP wrapper server for CLI agent integration."""
+    serve_command(host=host, port=port, daemon=daemon, stop=stop, status=status)
 
 
 if __name__ == "__main__":

@@ -2,7 +2,7 @@
 name = "memento-s"
 version = "0.2.0"
 description = "Memento-S Agent"
-requires-python = ">=3.12"
+requires-python = ">=3.13,<3.14"
 dependencies = [
     "typer",
     "rich",
@@ -18,7 +18,7 @@ dependencies = [
     "httpx",
     "beautifulsoup4",
     "markdownify",
-    "aiohttp",
+    "aiohttp>=3.9.0",
     "requests",
     "aiofiles",
     "anyio",
@@ -87,6 +87,7 @@ sources = [
     "utils",
     "builtin",
     "daemon",
+    "cli_agents",
     "bootstrap",   # bootstrap/ package (was bootstrap.py)
 ]
 requires = [
@@ -105,7 +106,7 @@ requires = [
     "httpx",
     "beautifulsoup4",
     "markdownify",
-    "aiohttp",
+    "aiohttp>=3.9.0",
     "requests",
     "aiofiles",
     "anyio",
@@ -124,10 +125,12 @@ console_app = false
 
 # ─── Hatch build ───────────────────────────────────────────────────────────────
 [tool.hatch.build.targets.wheel]
-packages = ["cli", "core", "middleware", "gui", "utils", "builtin", "daemon"]
+packages = ["cli", "core", "middleware", "gui", "utils", "builtin", "daemon", "cli_agents"]
 include = [
     "bootstrap.py",
     "builtin/skills/**",
+    "cli_agents/hooks/**",
+    "cli_agents/research/**",
 ]
 
 [tool.hatch.build.targets.sdist]
@@ -139,6 +142,7 @@ include = [
     "utils/",
     "builtin/",
     "daemon/",
+    "cli_agents/",
     "bootstrap.py",
     "pyproject.toml",
     "README.md",

@@ -5,6 +5,7 @@ from .doctor import doctor_command
 from .feishu_bridge import feishu_bridge_command
 from .im_status import im_status_command
 from .wechat import wechat_app, wechat_bridge_command
+from .adapt import adapt_command, serve_command
 
 from im.dingtalk import dingtalk_bridge_command
 from im.wecom import wecom_bridge_command
@@ -20,4 +21,6 @@ __all__ = [
     "gateway_worker_command",
     "wechat_app",
     "wechat_bridge_command",
+    "adapt_command",
+    "serve_command",
 ]
